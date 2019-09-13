@@ -1,40 +1,39 @@
-# Sample 01 - Logging In and Gated Content
+# Discovery to Guidance Application
 
-This sample demonstrates:
-
-- Logging in to Auth0 using Redirect Mode
-- Accessing profile information that has been provided in the ID token
-- Gated content. The `/profile` route is not accessible without having first logged in
+The goal of this application is to provide an application that Auth0 field reps can use to generate guidance documentation/presentations for customers
 
 ## Project setup
 
-Use `yarn` or `npm` to install the project dependencies:
+NOTE: This was developed using Node 10.15.3
+
+Use `npm` to install the project dependencies:
 
 ```bash
 # Using npm..
 npm install
-
-# Using yarn..
-yarn install
 ```
 
 ### Configuration
 
 The project needs to be configured with your Auth0 domain and client ID in order for the authentication flow to work.
 
-To do this, first copy `src/auth_config.json.example` into a new file in the same folder called `src/auth_config.json`, and replace the values with your own Auth0 application credentials:
+To do this, first copy `env.sample` into a new file in the same folder called `.env`, and replace the values with your own Auth0 application credentials:
 
-```json
-{
-  "domain": "{YOUR AUTH0 DOMAIN}",
-  "clientId": "{YOUR AUTH0 CLIENT ID}"
-}
+```shell
+AUTH0_DOMAIN=YOUR_TENANT.auth0.com
+AUTH0_CLIENT_ID=YOUR_CLIENT_ID
+AUTH0_CLIENT_SECRET=YOUR_CLIENT_SECRET
+AUTH0_CALLBACK=http://localhost:3000/callback
+SESSION_SECRET=some-random-secret-should-be-really-long-maybe-even-longer-than-this
 ```
 
-### Compiles and hot-reloads for development
+### Compiles and runs
 
 ```bash
-npm run start
+npm run buildandserve
+
+# Or if just server side changes:
+npm run serve
 ```
 
 ## Deployment
@@ -44,20 +43,6 @@ npm run start
 ```bash
 npm run build
 ```
-
-### Docker build
-
-To build and run the Docker image, run `exec.sh`, or `exec.ps1` on Windows.
-
-### Run your tests
-
-```bash
-npm run test
-```
-
-## Frequently Asked Questions
-
-We are compiling a list of questions and answers regarding the new JavaScript SDK - if you're having issues running the sample applications, [check the FAQ](https://github.com/auth0/auth0-spa-js/blob/master/FAQ.md)!
 
 # What is Auth0?
 
