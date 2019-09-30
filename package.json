@@ -5,7 +5,7 @@
   "scripts": {
     "serve": "node web-server.js",
     "buildandserve": "npm run build && npm run serve",
-    "build": "react-scripts build",
+    "build": "react-scripts build"
   },
   "dependencies": {
     "@auth0/auth0-spa-js": "^1.0.2",
