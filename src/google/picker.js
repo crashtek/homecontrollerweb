@@ -147,19 +147,14 @@ export const PickerProvider = ({
     let newResult = message;
     gapi.client.sheets.spreadsheets.values.get({
       spreadsheetId: id,
-      range: 'A1:A2',
+      range: 'A:Z',
     }).then(function(response) {
       const range = response.result;
-      if (range.values.length > 0) {
-        newResult += '<br/>Results<br/>';
-        for (let i = 0; i < range.values.length; i++) {
-          const row = range.values[i];
-          newResult += `Value: ${row[0]}<br/>`;
-        }
-      } else {
-        newResult += '<br/>No Data Found<br/>';
-      }
-      setResult(newResult);
+      axios.post('/api/scenariodoc', {range})
+        .then((response) => {
+          console.log('carlos, response: ', response);
+          setResult(`${message} and Result: ` + JSON.stringify(response.data));
+        });
     }, function(response) {
       newResult += `<br/>Error: ${response.result.error.message}<br/>`;
       console.error('Dump Error', response.result.error.message);

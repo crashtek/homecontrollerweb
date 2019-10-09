@@ -8,6 +8,8 @@ import Auth0Strategy from 'passport-auth0';
 import dotenv from 'dotenv';
 import session from 'express-session';
 import querystring from 'querystring';
+import bodyParser from 'body-parser';
+
 
 import apiRouter from './api';
 
@@ -16,6 +18,7 @@ dotenv.config();
 const app = express();
 
 app.use(morgan("dev"));
+app.use(bodyParser.json());
 
 /*
   Configure the session object
