@@ -24,6 +24,7 @@ export const PickerProvider = ({
   const [picker, setPicker] = useState();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [result, setResult] = useState();
+  const [json, setJson] = useState();
   const gapi = window.gapi;
 
 
@@ -154,6 +155,7 @@ export const PickerProvider = ({
         .then((response) => {
           console.log('carlos, response: ', response);
           setResult(`${message} and Result: ` + JSON.stringify(response.data));
+          setJson(response.data);
         });
     }, function(response) {
       newResult += `<br/>Error: ${response.result.error.message}<br/>`;
@@ -170,7 +172,8 @@ export const PickerProvider = ({
       handleOpen,
       handleAuthRequest,
       handleLogoutRequest,
-      result
+      result,
+      json
     }}}>
       { children }
     </PickerContext.Provider>

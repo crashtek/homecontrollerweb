@@ -1,9 +1,11 @@
-import Discovery from '../src/utils/discovery';
-import generateGuidance from '../src/utils/generateGuidance';
+import Discovery from '../server/discovery';
+import Guidance from '../server/guidance';
 import sheet from './assets/exampleSheet1.json';
 
 const discovery = new Discovery(sheet);
 
-generateGuidance(discovery);
+discovery.dump();
 
+const guidance = new Guidance(discovery);
 
+guidance.dump();

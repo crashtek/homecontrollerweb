@@ -1,14 +1,10 @@
+import { sectionTitleToKey, isSpecialSection } from './sections';
 const PARSING = 1;
 const SKIPPING_SECTION = 2;
 
 const PROPERTY = 'P';
 const HEADING = 'H';
 const QUESTION = 'Q';
-
-const sections = {
-  'Project Goals': 'goals',
-  'Application Ecosystem': 'ecosystem'
-};
 
 export class Discovery {
   parseProperty(row) {
@@ -25,10 +21,14 @@ export class Discovery {
 
   parseHeading(row) {
     const section = row[1];
-    const sectionName = sections[section];
+    const sectionName = sectionTitleToKey[section];
     if (sectionName) {
       this.currentSection = sectionName;
-      this[this.currentSection] = [];
+      if (isSpecialSection(sectionName)) {
+        this[this.currentSection] = [];
+      } else {
+        this.questions[this.currentSection] = [];
+      }
       this.state = PARSING;
     } else {
       console.warn(`Skipping unknown header: ${section}`);
@@ -48,7 +48,7 @@ export class Discovery {
 
     if (question) {
       // If we have a question here, put all default values in for this question
-      const sectionQuestions = this[this.currentSection];
+      const sectionQuestions = (isSpecialSection(this.currentSection)) ? this[this.currentSection] : this.questions[this.currentSection];
       this.currentQuestion = {question};
       sectionQuestions.push(this.currentQuestion);
     }
@@ -56,8 +56,6 @@ export class Discovery {
     if (answer && (!checkbox || checkbox === 'TRUE')) {
       if (!this.currentQuestion.answer) this.currentQuestion.answer = [];
       this.currentQuestion.answer.push(answer);
-    } else {
-      console.log ('Carlos, checkbox and answer: ', answer, checkbox);
     }
 
     if (notes) {
@@ -84,6 +82,9 @@ export class Discovery {
       [QUESTION]: this.parseQuestion.bind(this)
     };
 
+    this.questions = {};
+    this.goals = [];
+    this.notes = [];
     this.properties = {};
     this.state = PARSING;
 
@@ -96,7 +97,49 @@ export class Discovery {
   }
 
   getGoals() { return this.goals; }
-  getEcosystem() { return this.ecosystem; }
+  getNotes() { return this.notes; }
+  getQuestions() { return this.questions; }
+  static dumpQuestion(question) {
+    const noAnswer = question.answer ? '' : '[NOT ANSWERED] ';
+    console.log(`${noAnswer}${question.question}`);
+    if (question.answer) {
+      console.log("ANSWER");
+      question.answer.forEach(answer => {
+        console.log(`\t${answer.split("\n").join("\n\t")}\n`);
+      });
+    }
+    if (question.notes) {
+      console.log("NOTES");
+      question.notes.forEach(note => {
+        console.log(`\t${note.split("\n").join("\n\t")}\n`);
+      });
+    }
+  }
+
+  dump() {
+    const goals = this.getGoals();
+    console.log("GOALS");
+    goals.forEach(Discovery.dumpQuestion);
+
+    const notes = this.getNotes();
+    console.log("NOTES");
+    notes.forEach(Discovery.dumpQuestion);
+
+    const questions = this.getQuestions();
+    Object.keys(questions).forEach((sectionName) => {
+      console.log(`\n***********\nNEXT SECTION: ${sectionName}\n***********`);
+      const section = questions[sectionName];
+      const answeredQuestions = [];
+      const unansweredQuestions = [];
+      section.forEach(question => {
+        if (question.answer) answeredQuestions.push(question);
+        else unansweredQuestions.push(question);
+      });
+
+      answeredQuestions.forEach(Discovery.dumpQuestion);
+      unansweredQuestions.forEach(Discovery.dumpQuestion);
+    });
+  }
 }
 
 export default Discovery;

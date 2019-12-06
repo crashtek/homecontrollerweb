@@ -1,9 +1,10 @@
 import express from 'express';
 import fs from 'fs';
 
+import Discovery from '../discovery';
+import Guidance from '../guidance';
+
 const router = express.Router();
-
-
 
 router.get('/userinfo', (req, res) => {
   res.json(req.user);
@@ -17,17 +18,20 @@ router.get('/settings', (req, res) => {
 });
 
 router.post('/scenariodoc', (req, res) => {
-  console.log(req.body);
   try {
     const path = 'fileCache.json';
     fs.writeFileSync(path, JSON.stringify(req.body));
-  } catch (err) {
-    console.error(err)
-  }
 
-  res.json({
-    message: 'got it!'
-  });
+    const discovery = new Discovery(req.body);
+    const guidance = new Guidance(discovery);
+
+    return res.json(guidance.getJSON());
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      error: err
+    });
+  }
 });
 
 

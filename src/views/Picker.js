@@ -1,8 +1,9 @@
 import React from "react";
 
+import Guidance from '../components/Guidance';
 import { usePicker, PickerProvider } from '../google/picker';
 
-const PickerDisplay = () => {
+const PickerDisplay = (props) => {
   const {
     picker // , dispatch
   } = usePicker();
@@ -13,7 +14,8 @@ const PickerDisplay = () => {
       <button type="button" id="auth" disabled={picker.needAuth} onClick={picker.handleLogoutRequest}>Logout
       </button>
       <button type="button" id="pickerButton" disabled={!picker.ready} onClick={picker.handleOpen}>Open Picker</button>
-      <div id="result">{picker.result}</div>
+      <div>{picker.result}</div>
+      <Guidance guidance={picker.json} />
     </React.Fragment>
   );
 };
