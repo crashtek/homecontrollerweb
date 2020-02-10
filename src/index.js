@@ -1,9 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import axios from 'axios';
 import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import { AuthProvider } from "./react-bff-auth";
+
+axios.defaults.headers['x-csrf-token'] = 'wemustsendsomething';
+console.log("Carlos NODE_ENV: ", process.env.NODE_ENV);
+axios.defaults.baseURL = 'http://localhost:3000'; // comment out for prod!!!
+axios.defaults.withCredentials = true;
 
 ReactDOM.render(
   <AuthProvider>

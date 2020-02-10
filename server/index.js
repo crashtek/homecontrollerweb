@@ -1,17 +1,19 @@
 /* eslint-disable no-console */
-import _ from 'lodash';
 import express from 'express';
+import session from 'express-session';
+import jwt from 'express-jwt';
+import cors from 'cors';
+import jwks from 'jwks-rsa';
+import { auth, requiresAuth } from 'express-openid-connect';
 import { join } from 'path';
 import morgan from 'morgan';
-import passport from 'passport';
-import Auth0Strategy from 'passport-auth0';
 import dotenv from 'dotenv';
-import session from 'express-session';
-import querystring from 'querystring';
 import bodyParser from 'body-parser';
 
-
 import apiRouter from './api';
+import backendRouter from './backend';
+import database from './Database';
+import commandQueue from './CommandQueue';
 
 dotenv.config();
 
@@ -27,110 +29,89 @@ app.use(bodyParser.json());
 // config express-session
 const sess = {
   secret: process.env.SESSION_SECRET,
-  cookie: {},
+  cookie: {
+    sameSite: 'none'
+  },
   resave: false,
   saveUninitialized: true
 };
 
 if (app.get('env') === 'production') {
+  console.log("RUNNING PRODUCTION!!!");
   sess.cookie.secure = true; // serve secure cookies, requires https
+  sess.cookie.sameSite = 'strict'; // serve secure cookies, requires https
+} else {
+  app.use(cors({
+    origin: 'http://localhost:3001',
+    credentials: true
+  }));
 }
 
 app.use(session(sess));
 
-/*
-  Need to check whether or not the user is logged in before rendering the SPA
- */
-const strategy = new Auth0Strategy(
-  {
-    domain: process.env.AUTH0_DOMAIN,
-    clientID: process.env.AUTH0_CLIENT_ID,
-    clientSecret: process.env.AUTH0_CLIENT_SECRET,
-    callbackURL:
-      process.env.AUTH0_CALLBACK_URL || 'http://localhost:3000/callback'
-  },
-  function (accessToken, refreshToken, extraParams, profile, done) {
-    // accessToken is the token to call Auth0 API (not needed in the most cases)
-    // extraParams.id_token has the JSON Web Token
-    // profile has all the information from the user
-    return done(null, profile);
-  }
-);
-passport.use('auth0', strategy);
-
-passport.serializeUser(function(user, done) {
-  if (_.isObject(user.name)) {
-    user.name = `${user.name.givenName} ${user.name.familyName}`;
-  }
-  done(null, user);
+const autoLogin = () => auth({
+  required: true
 });
 
-passport.deserializeUser(function(user, done) {
-  if (_.isObject(user.name)) {
-    user.name = `${user.name.givenName} ${user.name.familyName}`;
+const secureBackend = () => ([auth({
+  required: true,
+  errorOnRequiredAuth: true
+}), (req, res, next) => {
+  // We just need to validate that a header is coming through so we aren't vulnerable to CSRF (this call is coming
+  // from the frontend because we don't allow CORS and this is an XHR if we are getting headers
+  if (req.openid.user && req.header('x-csrf-token')) {
+    return next();
   }
-  done(null, user);
-});
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-const secureEverything = (req, res, next) => {
-  if (req.user) { return next(); }
-  req.session.returnTo = req.originalUrl;
-  res.redirect('/login');
-};
-
-const secureApi = (req, res, next) => {
-  if (req.user) { return next(); }
   res.status(401).json({ message: 'not authorized' });
-};
+}]);
 
-
-app.get('/login', passport.authenticate('auth0', {
-  connection: 'google-oauth2',
-  scope: 'openid email profile'
-}), function (req, res) {
-  res.redirect('/');
+const secureApi = () => jwt({
+  secret: jwks.expressJwtSecret({
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: `${process.env.ISSUER_BASE_URL}/.well-known/jwks.json`
+  }),
+  audience: 'http://hc.api.crashtek.games/v1/',
+  issuer: `${process.env.ISSUER_BASE_URL}/`,
+  algorithms: ['RS256']
 });
 
+// app.get('/login', passport.authenticate('auth0', {
+//   connection: 'google-oauth2',
+//   scope: 'openid email profile'
+// }), function (req, res) {
+//   res.redirect('/');
+// });
 
-// Perform the final stage of authentication and redirect to previously requested URL or '/user'
-app.get('/callback', function (req, res, next) {
-  passport.authenticate('auth0', function (err, user, info) {
-    if (err) { return next(err); }
-    if (!user) { return res.redirect('/login'); }
-    req.logIn(user, function (err) {
-      if (err) { return next(err); }
-      const returnTo = req.session.returnTo;
-      delete req.session.returnTo;
-      res.redirect(returnTo || '/user');
-    });
-  })(req, res, next);
-});
-
-// Perform session logout and redirect to homepage
-app.get('/logout', (req, res) => {
-  req.logout();
-
-  let returnTo = req.protocol + '://' + req.hostname;
-  const port = req.connection.localPort;
-  if (port !== undefined && port !== 80 && port !== 443) {
-    returnTo += ':' + port;
-  }
-  const logoutURL = new URL(`https://${process.env.AUTH0_DOMAIN}/v2/logout`);
-  const searchString = querystring.stringify({
-    client_id: process.env.AUTH0_CLIENT_ID,
-    returnTo: `${returnTo}/loggedOut`
-  });
-  logoutURL.search = searchString;
-
-  res.redirect(logoutURL);
-});
+// // Perform session logout and redirect to homepage
+// app.get('/logout', (req, res) => {
+//   req.logout();
+//
+//   let returnTo = req.protocol + '://' + req.hostname;
+//   const port = req.connection.localPort;
+//   if (port !== undefined && port !== 80 && port !== 443) {
+//     returnTo += ':' + port;
+//   }
+//   const logoutURL = new URL(`https://${process.env.AUTH0_DOMAIN}/v2/logout`);
+//   const searchString = querystring.stringify({
+//     client_id: process.env.AUTH0_CLIENT_ID,
+//     returnTo: `${returnTo}/loggedOut`
+//   });
+//   logoutURL.search = searchString;
+//
+//   res.redirect(logoutURL);
+// });
 
 // Need to secure direct access to the SPA
-app.all('/', secureEverything);
-app.all('/index.html', secureEverything);
+app.all('/', [auth({
+  required: false
+}), (req, res, next) => {
+  console.log('hello!!!');
+  next()
+}, requiresAuth()
+]);
+app.all('/index.html', autoLogin());
 
 // Need to make the static pages available
 app.use(express.static(join(__dirname, "..", "build")));
@@ -140,10 +121,11 @@ app.use('/loggedOut', (_, res) => {
   res.sendFile(join(__dirname, "..", "build", "index.html"));
 });
 
-app.use('/api', secureApi, apiRouter);
+app.use('/api', secureApi(), apiRouter);
+app.use('/backend', secureBackend(), backendRouter);
 
 // NOTE: This must happen *after* the unsecured routes
-app.use(secureEverything);
+app.use(autoLogin());
 
 /*
   Here are the static endpoints for rending the SPA itself
@@ -152,4 +134,19 @@ app.use((_, res) => {
   res.sendFile(join(__dirname, "..", "build", "index.html"));
 });
 
-app.listen(3000, () => console.log("Listening on port 3000"));
+/*
+  Initialize the command queue
+ */
+const port = process.env.PORT || 3000;
+database.getRooms()
+  .then(rooms => {
+    const homeConfigs = {};
+    rooms.forEach(room => {
+      if (!homeConfigs[room.homeId]) {
+        homeConfigs[room.homeId] = [];
+      }
+      homeConfigs[room.homeId].push(room);
+    });
+    commandQueue.setHomeConfigs(homeConfigs);
+  })
+  .then(() => app.listen(port, () => console.log(`Listening on port ${port}`)));

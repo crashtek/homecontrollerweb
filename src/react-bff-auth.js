@@ -12,7 +12,7 @@ const fetchUser = async () => {
   }
 
   try {
-    const response = await axios.get('/api/userinfo');
+    const response = await axios.get('/backend/userinfo');
     console.log(response);
     staticUser = response.data;
   } catch(e) {

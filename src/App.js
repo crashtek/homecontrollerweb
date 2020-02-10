@@ -8,8 +8,10 @@ import NavBar from "./components/NavBar";
 import Footer from "./components/Footer";
 import Home from "./views/Home";
 import LoggedOut from "./views/LoggedOut";
-import Picker from "./views/Picker";
 import Profile from "./views/Profile";
+import Room from "./views/Room";
+import Window from "./views/Window";
+import Schedule from "./views/Schedule";
 import { useAuth } from "./react-bff-auth";
 import history from "./utils/history";
 
@@ -34,8 +36,10 @@ const App = () => {
         <Container className="flex-grow-1 mt-5">
           <Switch>
             <Route path="/" exact component={Home} />
-            <Route path="/picker" exact component={Picker} />
             <Route path="/loggedOut" exact component={LoggedOut} />
+            <Route path="/room/:id?" exact component={Room} />
+            <Route path="/room/:roomId/window/:windowId?" exact component={Window} />
+            <Route path="/room/:roomId/schedule/:scheduleId?" exact component={Schedule} />
             <PrivateRoute path="/profile" component={Profile} />
           </Switch>
         </Container>
