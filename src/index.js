@@ -7,9 +7,10 @@ import * as serviceWorker from "./serviceWorker";
 import { AuthProvider } from "./react-bff-auth";
 
 axios.defaults.headers['x-csrf-token'] = 'wemustsendsomething';
-console.log("Carlos NODE_ENV: ", process.env.NODE_ENV);
-axios.defaults.baseURL = 'http://localhost:3000'; // comment out for prod!!!
-axios.defaults.withCredentials = true;
+if (process.env.NODE_ENV !== 'production') {
+  axios.defaults.baseURL = 'http://localhost:3000'; // comment out for prod!!!
+  axios.defaults.withCredentials = true;
+}
 
 ReactDOM.render(
   <AuthProvider>
