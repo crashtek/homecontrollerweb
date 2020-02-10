@@ -7,7 +7,8 @@
     "debug:client": "react-scripts start",
     "serve": "nodemon --ignore ./node_modules web-server.js",
     "buildandserve": "npm run build && npm run serve",
-    "build": "react-scripts build"
+    "build": "react-scripts build",
+    "start": "node web-server.js"
   },
   "dependencies": {
     "@auth0/cosmos": "^0.33.0",
