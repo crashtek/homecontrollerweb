@@ -62,6 +62,7 @@ class CommandQueue {
   }
 
   updateRoom(homeId, newRoom) {
+    if (!this.homeConfigs[homeId]) this.homeConfigs[homeId] = [];
     const roomIndex = this.homeConfigs[homeId].findIndex(room => toString(room._id) === toString(newRoom._id));
     if (roomIndex >= 0) this.homeConfigs[homeId][roomIndex] = newRoom;
     else this.homeConfigs[homeId].push(newRoom);
@@ -69,6 +70,7 @@ class CommandQueue {
   }
 
   deleteRoom(homeId, roomId) {
+    if (!this.homeConfigs[homeId]) this.homeConfigs[homeId] = [];
     const roomIndex = this.homeConfigs[homeId].findIndex(room => toString(room._id) === toString(roomId));
     this.homeConfigs[homeId].splice(roomIndex, 1);
     this.emitter.emit(CheckQueueEventName);
