@@ -8,6 +8,7 @@ import { AuthProvider } from "./react-bff-auth";
 
 axios.defaults.headers['x-csrf-token'] = 'wemustsendsomething';
 if (process.env.NODE_ENV !== 'production') {
+  console.log('RUNNING IN DEV MODE!!!');
   axios.defaults.baseURL = 'http://localhost:3000'; // comment out for prod!!!
   axios.defaults.withCredentials = true;
 }
