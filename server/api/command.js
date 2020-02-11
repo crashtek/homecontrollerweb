@@ -4,7 +4,7 @@ import { commandQueue, LongPollExpiredName } from '../CommandQueue';
 
 const router = express.Router();
 
-const longPollingTime = 30000;
+const longPollingTime = 20000;
 
 const getNextCommand = async (user, home, lastSync) => new Promise((resolve, reject) => {
   // TODO: make sure user can actually monitor this home
