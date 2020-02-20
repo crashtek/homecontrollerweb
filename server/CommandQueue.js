@@ -61,10 +61,9 @@ class CommandQueue {
     this.emitter.emit(CheckQueueEventName);
   }
 
-  commandShade(homeId, roomId, command) {
+  commandShade(homeId, ipaddress, command) {
     this.activeCommand[homeId] = {
-      homeId,
-      roomId,
+      ipaddress,
       command
     }
   }
