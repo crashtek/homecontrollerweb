@@ -9,7 +9,7 @@ router.put('/:id', (req, res) => {
 
   commandQueue.commandShade(homeId, req.params.id, req.body.command);
 
-  res.status(204);
+  res.status(204).send();
 });
 
 export default router;
