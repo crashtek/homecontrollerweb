@@ -61,6 +61,14 @@ class CommandQueue {
     this.emitter.emit(CheckQueueEventName);
   }
 
+  commandShade(homeId, roomId, command) {
+    this.activeCommand[homeId] = {
+      homeId,
+      roomId,
+      command
+    }
+  }
+
   updateRoom(homeId, newRoom) {
     if (!this.homeConfigs[homeId]) this.homeConfigs[homeId] = [];
     const roomIndex = this.homeConfigs[homeId].findIndex(room => toString(room._id) === toString(newRoom._id));
