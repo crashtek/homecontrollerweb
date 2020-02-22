@@ -62,10 +62,10 @@ class CommandQueue {
   }
 
   commandShade(homeId, ipaddress, command) {
-    this.activeCommand[homeId] = {
+    this.addCommand(homeId, {
       ipaddress,
       command
-    }
+    });
   }
 
   updateRoom(homeId, newRoom) {
