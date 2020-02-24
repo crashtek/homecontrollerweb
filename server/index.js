@@ -7,6 +7,7 @@ import jwks from 'jwks-rsa';
 import { auth, requiresAuth } from 'express-openid-connect';
 import { join } from 'path';
 import morgan from 'morgan';
+
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 
@@ -16,6 +17,7 @@ import database from './Database';
 import commandQueue from './CommandQueue';
 
 dotenv.config();
+
 
 const app = express();
 

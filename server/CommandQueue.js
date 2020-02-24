@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import logger from './logger';
 
 const CheckQueueEventName = 'checkqueue';
 const HomeClaim = 'http://crashtek.com/claim/homeId';
@@ -45,6 +46,7 @@ class CommandQueue {
     return new Promise((resolve, reject) => {
       const checkQueue = () => {
         const nextCommand = me.getCommand(homeId, lastSync);
+        logger.debug(`Checking Queue`, nextCommand);
         if (nextCommand) return resolve(nextCommand);
       };
       me.emitter.on(CheckQueueEventName, checkQueue);
@@ -62,6 +64,7 @@ class CommandQueue {
   }
 
   commandShade(homeId, ipaddress, command) {
+    logger.info(`Got shade command: ${homeId}, ${ipaddress}, ${command}`);
     this.addCommand(homeId, {
       ipaddress,
       command

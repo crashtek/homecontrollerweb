@@ -9,9 +9,11 @@ const router = express.Router();
 router.put('/:id', (req, res) => {
   const homeId = 1;
 
+  logger.debug('Got command', req.body);
+
   database.getRoomById(homeId, req.params.id)
     .then(room => {
-      commandQueue.commandShade(room.ipaddress, req.body.command);
+      commandQueue.commandShade(homeId, room.ipaddress, req.body.command);
       res.status(204).send();
     })
     .catch(err => {
