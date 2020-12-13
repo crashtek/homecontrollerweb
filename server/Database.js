@@ -75,10 +75,13 @@ class Database {
 
     let oldRoom = await this.getRoomByName( homeId, params.name );
 
-    // First check to see if we have nothing to do, name is currently our only field.
+    // First check to see if we have nothing to do
     if (oldRoom) {
-      if (roomId === oldRoom._id.toString()) return oldRoom;
-      throw new Error('Room already exists');
+      if (roomId === oldRoom._id.toString()) {
+        if (params.ipaddress === oldRoom.ipaddress) return oldRoom; // ipaddress and name are all that can change
+      }  else {
+        throw new Error('Room already exists');
+      }
     }
 
     const now = Date.now();

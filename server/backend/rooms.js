@@ -54,6 +54,8 @@ router.post('/', (req, res) => {
 router.patch('/:roomId', (req, res) => {
   const newRoomParams = _.pick(req.body, roomFields);
 
+  logger.debug('PATCH Room: ', newRoomParams);
+
   database.updateRoom(req.body.homeId, req.params.roomId,
     req.openid.user.sub, newRoomParams)
     .then(room => res.json({ room }))
